@@ -3,6 +3,7 @@ import sys
 import string
 import colorama
 
+
 def MAIN():
     # Colorama allows printing with color in the terminal
     colorama.init()
@@ -115,19 +116,37 @@ def traceback(traceMatrix, matrix, string1, string2):
 
 def printMatrixColored(traceMatrix, matrix, string1, string2, colorMatrix):
 
+    string1 = string1.replace('0', '')
+    string2 = string2.replace('0', '')
+
     # Determining matrices dimensions
     height = len(matrix)
     width = len(matrix[0])
 
     # Declaring the print matrix with dimensions that would allow for spaces to add the edges
-    printMatrix = np.ndarray([(2 * height) - 1, (2 * width) - 1], dtype='S1')
+    printMatrix = np.ndarray([(2 * height), (2 * width)], dtype='S1')
 
     # Fill printMatrix initially with whitespaces
     for i in range(0, len(printMatrix)):
         for j in range(0, len(printMatrix[i])):
             printMatrix[i][j] = string.whitespace
 
+    # Fill 2nd row and 2nd col with zeros
+    for i in range(0, len(printMatrix)):
+        for j in range(0, len(printMatrix[i])):
+            if (i == 1 or j == 1) and (j % 2 != 0) and (i % 2 != 0):
+                printMatrix[i][j] = '0'
+            elif (i == 1 or j == 1):
+                printMatrix[i][j] = string.whitespace
+            else:
+                pass
 
+    # Fill in both strings into the printMatrix
+    for j in range(0, len(string2)):
+        printMatrix[0][(j * 2) + 3] = string2[j]
+    for i in range(0, len(string1)):
+        printMatrix[(i * 2) + 3][0] = string1[i]
+    
     # Add the normal matrix to its place
     # At the same time, if a cell's parent is diagonal
     # Add the \ character to the top left cell
@@ -136,34 +155,30 @@ def printMatrixColored(traceMatrix, matrix, string1, string2, colorMatrix):
     # else add the - character to the left cell
     for i in range(1, height):
         for j in range(1, width):
-            printMatrix[i*2][j*2] = matrix[i][j]
+            printMatrix[(i*2) + 1][(j*2) + 1] = matrix[i][j]
             if(traceMatrix[i][j] == b'\\'):
-                printMatrix[(i*2) - 1][(j*2) - 1] = traceMatrix[i][j]
+                printMatrix[(i*2)][(j*2)] = traceMatrix[i][j]
             elif(traceMatrix[i][j] == b'|'):
-                printMatrix[(i*2) - 1][(j*2)] = traceMatrix[i][j]
+                printMatrix[(i*2)][(j*2) + 1] = traceMatrix[i][j]
             else:
-                printMatrix[(i*2)][(j*2) - 1] = traceMatrix[i][j]
-
-
-    # Fill in both strings into the printMatrix
-    for j in range(0, width):
-        printMatrix[0][j * 2] = string2[j]
-    for i in range(0, height):
-        printMatrix[i * 2][0] = string1[i]
+                printMatrix[(i*2) + 1][(j*2)] = traceMatrix[i][j]
 
 
     # Print the printMatrix with green color if the corresponding cell in colorMatrix == 1
     # and with black otherwise
     for i in range(0, len(printMatrix)):
         for j in range(0, len(printMatrix[i])):
+            if j == 1:
+                print(" ", end='')
             print(colorama.Style.RESET_ALL, end='')
             # try:
-            if colorMatrix[i][j] == 0:
-                print(printMatrix[i][j].decode(), end='')
-            else:
+            if i >= 1 and j >= 1 and colorMatrix[i - 1][j - 1] == 1:
                 print(colorama.Fore.GREEN, end='')
                 print(printMatrix[i][j].decode(), end='')
+            else:
+                print(printMatrix[i][j].decode(), end='')
         print()
+
 
 if __name__ == "__main__":
     MAIN()
